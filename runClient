@@ -1,0 +1,4 @@
+#!/bin/bash
+cd build
+java client.DSBlogClient 127.0.0.1
+
