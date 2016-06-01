@@ -1,10 +1,14 @@
 package client;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -13,7 +17,9 @@ import java.util.Scanner;
 public class DSBlogClient {
 	private static String IPAddress;
 	private static InetAddress desAddress;
-	private static int CLIENTS_PORT = 8887;
+	private static final int DC_LISTEN_TO_CLIENTS_PORT = 8887;
+	private static final int CLIENT_LISTEN_TO_DC_PORT = 8888;
+	private static final boolean DEBUG = true;
 
 	public static void main(String[] args) throws UnknownHostException {
 		if (args.length == 0) {
@@ -53,10 +59,10 @@ public class DSBlogClient {
 
 			Socket socket = null;
 			try {
-				socket = new Socket(desAddress, CLIENTS_PORT);
+				socket = new Socket(desAddress, DC_LISTEN_TO_CLIENTS_PORT);
 			} catch (ConnectException e) {
-				System.out.println(
-						e.getMessage() + ", possibly no process is listening on " + IPAddress + ":" + CLIENTS_PORT);
+				System.out.println(e.getMessage() + ", possibly no process is listening on " + IPAddress + ":"
+						+ DC_LISTEN_TO_CLIENTS_PORT);
 				continue;
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -71,23 +77,56 @@ public class DSBlogClient {
 			pw.println(req);
 			pw.flush();
 
-			if (req.equals("l")) {
-				List<String> messages = null;
-				try {
-					ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-					messages = (List<String>) ois.readObject();
-				} catch (IOException | ClassNotFoundException e) {
-					e.printStackTrace();
-				}
-				for (String message : messages) {
-					System.out.println(message);
-				}
-			}
-
 			try {
 				socket.close();
 			} catch (IOException e) {
 				e.printStackTrace();
+			}
+		}
+	}
+
+	public static class ListenToDCThread extends Thread {
+		ServerSocket listenToDCSocket;
+
+		@Override
+		public void run() {
+			try {
+				listenToDCSocket = new ServerSocket(CLIENT_LISTEN_TO_DC_PORT, 5);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			while (true) {
+				Socket socket;
+				try {
+					socket = listenToDCSocket.accept();
+					InputStream is = socket.getInputStream();
+
+					BufferedReader br = new BufferedReader(new InputStreamReader(is));
+					String signal = br.readLine();
+
+					if (DEBUG)
+						System.out.println("signal = " + signal);
+
+					ObjectInputStream ois = new ObjectInputStream(is);
+
+					if (signal.equals("r")) {
+
+					} else if (signal.equals("l")) {
+						List<String> messages = null;
+						try {
+							messages = (List<String>) ois.readObject();
+						} catch (ClassNotFoundException e) {
+							e.printStackTrace();
+						}
+						for (String message : messages) {
+							System.out.println(message);
+						}
+					}
+
+					socket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
