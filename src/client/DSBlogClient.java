@@ -114,6 +114,8 @@ public class DSBlogClient {
 					if (DEBUG)
 						System.out.println("signal = " + signal);
 
+					br.close();
+
 					ObjectInputStream ois = new ObjectInputStream(is);
 
 					if (signal.equals("r")) {
