@@ -33,6 +33,9 @@ public class DSBlogClient {
 
 		desAddress = InetAddress.getByName(IPAddress);
 
+		Thread listenToDCThread = new Thread(new ListenToDCThread());
+		listenToDCThread.start();
+
 		Scanner scanner = new Scanner(System.in);
 
 		while (true) {
