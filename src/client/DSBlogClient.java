@@ -99,6 +99,10 @@ public class DSBlogClient {
 				Socket socket;
 				try {
 					socket = listenToDCSocket.accept();
+
+					if (DEBUG)
+						System.out.println("ListenToDCThread accepted!");
+
 					InputStream is = socket.getInputStream();
 
 					BufferedReader br = new BufferedReader(new InputStreamReader(is));
