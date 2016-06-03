@@ -1,9 +1,10 @@
 package client;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.ConnectException;
@@ -11,15 +12,22 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class DSBlogClient {
+	private static DSBlogClient dsBlogClient = new DSBlogClient();
 	private static String IPAddress;
 	private static InetAddress desAddress;
+	private static List<InetAddress> desAddresses;
 	private static final int DC_LISTEN_TO_CLIENTS_PORT = 8887;
 	private static final int CLIENT_LISTEN_TO_DC_PORT = 8888;
 	private static final boolean DEBUG = true;
+
+	private DSBlogClient() {
+		desAddresses = new ArrayList<>();
+	}
 
 	public static void main(String[] args) throws UnknownHostException {
 		if (args.length == 0) {
@@ -29,6 +37,29 @@ public class DSBlogClient {
 		} else {
 			System.out.println("args[0] should be the IP address of the datacenter!");
 			return;
+		}
+
+		String IPAddressesFile = "../DSBlog2/IPAddresses2";
+
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(IPAddressesFile));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		String line;
+		int lineNo = 0;
+		try {
+			while ((line = br.readLine()) != null) {
+				line = line.trim();
+				if (line.isEmpty())
+					continue;
+				desAddresses.add(InetAddress.getByName(line));
+			}
+			br.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 		desAddress = InetAddress.getByName(IPAddress);
@@ -41,19 +72,23 @@ public class DSBlogClient {
 		while (true) {
 			String s = scanner.nextLine().trim();
 			boolean isPost = false, isLookup = false;
-			isPost = s.matches("((POST)|(post))\\s+(\\S|\\s)+");
+			isPost = s.matches("(\\d+)\\s+((POST)|(post))\\s+(\\S|\\s)+");
 			if (!isPost) {
-				isLookup = s.matches("((LOOKUP)|(lookup))");
+				isLookup = s.matches("(\\d+)\\s+((LOOKUP)|(lookup))");
 			}
 
+			int desNum = -1;
 			StringBuilder request = new StringBuilder();
 			String req = null;
 			if (isPost) {
-				String[] ss = s.split("\\s+", 2);
+				String[] ss = s.split("\\s+", 3);
+				desNum = Integer.parseInt(ss[0]);
 				request.append("p ");
-				request.append(ss[1]);
+				request.append(ss[2]);
 				req = request.toString();
 			} else if (isLookup) {
+				String[] ss = s.split("\\s+", 2);
+				desNum = Integer.parseInt(ss[0]);
 				req = "l";
 			} else {
 				System.out.println("Invalid request!");
@@ -62,7 +97,7 @@ public class DSBlogClient {
 
 			Socket socket = null;
 			try {
-				socket = new Socket(desAddress, DC_LISTEN_TO_CLIENTS_PORT);
+				socket = new Socket(desAddresses.get(desNum - 1), DC_LISTEN_TO_CLIENTS_PORT);
 			} catch (ConnectException e) {
 				System.out.println(e.getMessage() + ", possibly no process is listening on " + IPAddress + ":"
 						+ DC_LISTEN_TO_CLIENTS_PORT);
@@ -107,20 +142,16 @@ public class DSBlogClient {
 						System.out.println("ListenToDCThread accepted!");
 
 					InputStream is = socket.getInputStream();
+					ObjectInputStream ois = new ObjectInputStream(is);
 
-					BufferedReader br = new BufferedReader(new InputStreamReader(is));
-					String signal = br.readLine();
+					char signal = ois.readChar();
 
 					if (DEBUG)
 						System.out.println("signal = " + signal);
 
-					br.close();
+					if (signal == 'r') {
 
-					ObjectInputStream ois = new ObjectInputStream(is);
-
-					if (signal.equals("r")) {
-
-					} else if (signal.equals("l")) {
+					} else if (signal == 'l') {
 						List<String> messages = null;
 						try {
 							messages = (List<String>) ois.readObject();
