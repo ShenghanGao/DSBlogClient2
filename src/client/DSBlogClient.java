@@ -69,41 +69,56 @@ public class DSBlogClient {
 
 		Scanner scanner = new Scanner(System.in);
 
-		while (true) {
-			String s = scanner.nextLine().trim();
-			boolean isPost = false, isLookup = false;
-			isPost = s.matches("(\\d+)\\s+((POST)|(post))\\s+(\\S|\\s)+");
-			if (!isPost) {
-				isLookup = s.matches("(\\d+)\\s+((LOOKUP)|(lookup))");
-			}
+		int desNum = -1;
+		boolean willReadReq = true;
+		String req = null;
 
-			int desNum = -1;
-			StringBuilder request = new StringBuilder();
-			String req = null;
-			if (isPost) {
-				String[] ss = s.split("\\s+", 3);
-				desNum = Integer.parseInt(ss[0]);
-				request.append("p ");
-				request.append(ss[2]);
-				req = request.toString();
-			} else if (isLookup) {
-				String[] ss = s.split("\\s+", 2);
-				desNum = Integer.parseInt(ss[0]);
-				req = "l";
-			} else {
-				System.out.println("Invalid request!");
-				continue;
+		while (true) {
+			if (willReadReq) {
+				String s = scanner.nextLine().trim();
+				boolean isPost = false, isLookup = false;
+				isPost = s.matches("(\\d+)\\s+((POST)|(post))\\s+(\\S|\\s)+");
+				if (!isPost) {
+					isLookup = s.matches("(\\d+)\\s+((LOOKUP)|(lookup))");
+				}
+
+				StringBuilder request = new StringBuilder();
+
+				if (isPost) {
+					String[] ss = s.split("\\s+", 3);
+					desNum = Integer.parseInt(ss[0]);
+					request.append("p ");
+					request.append(ss[2]);
+					req = request.toString();
+				} else if (isLookup) {
+					String[] ss = s.split("\\s+", 2);
+					desNum = Integer.parseInt(ss[0]);
+					req = "l";
+				} else {
+					System.out.println("Invalid request!");
+					continue;
+				}
 			}
 
 			Socket socket = null;
 			try {
 				socket = new Socket(desAddresses.get(desNum - 1), DC_LISTEN_TO_CLIENTS_PORT);
 			} catch (ConnectException e) {
-				System.out.println(e.getMessage() + ", possibly no process is listening on " + IPAddress + ":"
-						+ DC_LISTEN_TO_CLIENTS_PORT);
+				System.out.println(e.getMessage() + ", possibly no process is listening on "
+						+ desAddresses.get(desNum - 1).getHostAddress() + ":" + DC_LISTEN_TO_CLIENTS_PORT);
+				desNum = desNum % desAddresses.size() + 1;
+				willReadReq = false;
+				System.out.println("Try to resend to " + desAddresses.get(desNum - 1).getHostAddress());
 				continue;
 			} catch (IOException e) {
 				e.printStackTrace();
+			}
+
+			willReadReq = true;
+
+			if (DEBUG) {
+				System.out.println(
+						"The client will send request \"" + req + "\" to " + socket.getInetAddress().getHostAddress());
 			}
 
 			PrintWriter pw = null;
@@ -112,6 +127,7 @@ public class DSBlogClient {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+
 			pw.println(req);
 			pw.flush();
 
@@ -138,8 +154,10 @@ public class DSBlogClient {
 				try {
 					socket = listenToDCSocket.accept();
 
-					if (DEBUG)
-						System.out.println("ListenToDCThread accepted!");
+					if (DEBUG) {
+						System.out.println(
+								"ListenToDCThread accepted! Messages from " + socket.getInetAddress().getHostAddress());
+					}
 
 					InputStream is = socket.getInputStream();
 					ObjectInputStream ois = new ObjectInputStream(is);
