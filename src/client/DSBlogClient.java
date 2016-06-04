@@ -82,7 +82,7 @@ public class DSBlogClient {
 				if (!isPost) {
 					isLookup = s.matches("\\d+\\s+((LOOKUP)|(lookup))");
 					if (!isLookup) {
-						isCfgChange = s.matches("\\d+\\s+(cfgChange)\\s+\\d+\\s+(\\S|\\s)+");
+						isCfgChange = s.matches("\\d+\\s+(cfgChange)\\s+\\d+\\s+(\\d|\\.|\\s)+");
 					}
 				}
 
@@ -104,6 +104,7 @@ public class DSBlogClient {
 					request.append("c ");
 					request.append(ss[2]);
 					req = request.toString();
+					System.out.println(req);
 				} else {
 					System.out.println("Invalid request!");
 					continue;
