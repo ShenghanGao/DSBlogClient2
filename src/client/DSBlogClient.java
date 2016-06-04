@@ -76,10 +76,14 @@ public class DSBlogClient {
 		while (true) {
 			if (willReadReq) {
 				String s = scanner.nextLine().trim();
-				boolean isPost = false, isLookup = false;
-				isPost = s.matches("(\\d+)\\s+((POST)|(post))\\s+(\\S|\\s)+");
+				boolean isPost = false, isLookup = false, isCfgChange = false;
+				;
+				isPost = s.matches("\\d+\\s+((POST)|(post))\\s+(\\S|\\s)+");
 				if (!isPost) {
-					isLookup = s.matches("(\\d+)\\s+((LOOKUP)|(lookup))");
+					isLookup = s.matches("\\d+\\s+((LOOKUP)|(lookup))");
+					if (!isLookup) {
+						isCfgChange = s.matches("\\d+\\s+(cfgChange)\\s+\\d+\\s+(\\S|\\s)+");
+					}
 				}
 
 				StringBuilder request = new StringBuilder();
@@ -94,6 +98,12 @@ public class DSBlogClient {
 					String[] ss = s.split("\\s+", 2);
 					desNum = Integer.parseInt(ss[0]);
 					req = "l";
+				} else if (isCfgChange) {
+					String[] ss = s.split("\\s+", 3);
+					desNum = Integer.parseInt(ss[0]);
+					request.append("c ");
+					request.append(ss[2]);
+					req = request.toString();
 				} else {
 					System.out.println("Invalid request!");
 					continue;
