@@ -29,6 +29,37 @@ public class DSBlogClient {
 		desAddresses = new ArrayList<>();
 	}
 
+	private static void updateIPAddresses(String contents) {
+		assert(contents != null);
+
+		String[] ss = contents.split("\\s+");
+
+		int numOfNodes = Integer.parseInt(ss[0]);
+
+		if (DEBUG) {
+			System.out.println("New IP addresses: ");
+		}
+
+		desAddresses.clear();
+		for (int i = 1; i < ss.length; ++i) {
+			if (DEBUG) {
+				System.out.println(ss[i]);
+			}
+			try {
+				desAddresses.add(InetAddress.getByName(ss[i]));
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+		}
+
+		if (DEBUG) {
+			System.out.println();
+		}
+
+		assert(numOfNodes == desAddresses.size());
+
+	}
+
 	public static void main(String[] args) throws UnknownHostException {
 		if (args.length == 0) {
 			IPAddress = "127.0.0.1";
@@ -70,8 +101,8 @@ public class DSBlogClient {
 		Scanner scanner = new Scanner(System.in);
 
 		int desNum = -1;
-		boolean willReadReq = true;
-		String req = null;
+		boolean willReadReq = true, shouldUpdateIPAddresses = false;
+		String req = null, IPAddresses = null;
 
 		while (true) {
 			if (willReadReq) {
@@ -104,7 +135,8 @@ public class DSBlogClient {
 					request.append("c ");
 					request.append(ss[2]);
 					req = request.toString();
-					System.out.println(req);
+					shouldUpdateIPAddresses = true;
+					IPAddresses = ss[2];
 				} else {
 					System.out.println("Invalid request!");
 					continue;
@@ -125,7 +157,12 @@ public class DSBlogClient {
 				e.printStackTrace();
 			}
 
+			if (shouldUpdateIPAddresses) {
+				updateIPAddresses(IPAddresses);
+			}
 			willReadReq = true;
+			shouldUpdateIPAddresses = false;
+			IPAddresses = null;
 
 			if (DEBUG) {
 				System.out.println(
