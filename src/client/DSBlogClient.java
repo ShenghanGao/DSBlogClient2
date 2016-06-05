@@ -132,9 +132,6 @@ public class DSBlogClient {
 					req = request.toString();
 					shouldUpdateIPAddresses = true;
 					IPAddresses = ss[2];
-
-					updateIPAddresses(ss[2]);
-
 				} else {
 					System.out.println("Invalid request!");
 					continue;
@@ -162,11 +159,10 @@ public class DSBlogClient {
 			shouldUpdateIPAddresses = false;
 			IPAddresses = null;
 
-			// if (DEBUG) {
-			// System.out.println(
-			// "The client will send request \"" + req + "\" to " +
-			// socket.getInetAddress().getHostAddress());
-			// }
+			if (DEBUG) {
+				System.out.println(
+						"The client will send request \"" + req + "\" to " + socket.getInetAddress().getHostAddress());
+			}
 
 			PrintWriter pw = null;
 			try {
@@ -201,11 +197,10 @@ public class DSBlogClient {
 				try {
 					socket = listenToDCSocket.accept();
 
-					// if (DEBUG) {
-					// System.out.println(
-					// "ListenToDCThread accepted! Messages from " +
-					// socket.getInetAddress().getHostAddress());
-					// }
+					if (DEBUG) {
+						System.out.println(
+								"ListenToDCThread accepted! Messages from " + socket.getInetAddress().getHostAddress());
+					}
 
 					InputStream is = socket.getInputStream();
 					ObjectInputStream ois = new ObjectInputStream(is);
