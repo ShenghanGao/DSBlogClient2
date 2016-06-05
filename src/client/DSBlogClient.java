@@ -48,8 +48,6 @@ public class DSBlogClient {
 			}
 		}
 
-		assert(numOfNodes == desAddresses.size());
-
 		System.out.println("Updated IP addresses: ");
 		for (InetAddress inetAddress : desAddresses) {
 			System.out.println(inetAddress.getHostAddress());
@@ -134,6 +132,9 @@ public class DSBlogClient {
 					req = request.toString();
 					shouldUpdateIPAddresses = true;
 					IPAddresses = ss[2];
+
+					updateIPAddresses(ss[2]);
+
 				} else {
 					System.out.println("Invalid request!");
 					continue;
