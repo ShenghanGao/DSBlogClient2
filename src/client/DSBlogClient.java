@@ -33,18 +33,14 @@ public class DSBlogClient {
 		assert(contents != null);
 
 		String[] ss = contents.split("\\s+");
-
 		int numOfNodes = Integer.parseInt(ss[0]);
 
 		if (DEBUG) {
-			System.out.println("New IP addresses: ");
+			System.out.println("numOfNodes: " + numOfNodes);
 		}
 
 		desAddresses.clear();
 		for (int i = 1; i < ss.length; ++i) {
-			if (DEBUG) {
-				System.out.println(ss[i]);
-			}
 			try {
 				desAddresses.add(InetAddress.getByName(ss[i]));
 			} catch (UnknownHostException e) {
@@ -52,12 +48,13 @@ public class DSBlogClient {
 			}
 		}
 
-		if (DEBUG) {
-			System.out.println();
-		}
-
 		assert(numOfNodes == desAddresses.size());
 
+		System.out.println("Updated IP addresses: ");
+		for (InetAddress inetAddress : desAddresses) {
+			System.out.println(inetAddress.getHostAddress());
+		}
+		System.out.println();
 	}
 
 	public static void main(String[] args) throws UnknownHostException {
@@ -70,7 +67,7 @@ public class DSBlogClient {
 			return;
 		}
 
-		String IPAddressesFile = "../DSBlog2/IPAddresses2";
+		String IPAddressesFile = "../DSBlog2/IPAddresses";
 
 		BufferedReader br = null;
 		try {
@@ -164,10 +161,11 @@ public class DSBlogClient {
 			shouldUpdateIPAddresses = false;
 			IPAddresses = null;
 
-			if (DEBUG) {
-				System.out.println(
-						"The client will send request \"" + req + "\" to " + socket.getInetAddress().getHostAddress());
-			}
+			// if (DEBUG) {
+			// System.out.println(
+			// "The client will send request \"" + req + "\" to " +
+			// socket.getInetAddress().getHostAddress());
+			// }
 
 			PrintWriter pw = null;
 			try {
@@ -202,18 +200,19 @@ public class DSBlogClient {
 				try {
 					socket = listenToDCSocket.accept();
 
-					if (DEBUG) {
-						System.out.println(
-								"ListenToDCThread accepted! Messages from " + socket.getInetAddress().getHostAddress());
-					}
+					// if (DEBUG) {
+					// System.out.println(
+					// "ListenToDCThread accepted! Messages from " +
+					// socket.getInetAddress().getHostAddress());
+					// }
 
 					InputStream is = socket.getInputStream();
 					ObjectInputStream ois = new ObjectInputStream(is);
 
 					char signal = ois.readChar();
 
-					if (DEBUG)
-						System.out.println("signal = " + signal);
+					// if (DEBUG)
+					// System.out.println("signal = " + signal);
 
 					if (signal == 'r') {
 
