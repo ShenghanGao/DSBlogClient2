@@ -65,7 +65,7 @@ public class DSBlogClient {
 			return;
 		}
 
-		String IPAddressesFile = "./IPAddresses";
+		String IPAddressesFile = "../IPAddresses";
 
 		BufferedReader br = null;
 		try {
@@ -185,6 +185,7 @@ public class DSBlogClient {
 	public static class ListenToDCThread extends Thread {
 		ServerSocket listenToDCSocket;
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public void run() {
 			try {
