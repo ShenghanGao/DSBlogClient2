@@ -1,4 +1,6 @@
 #!/bin/bash
+rm -f IPAddresses
+cp ../DSBlog2/IPAddresses .
+
 cd build
 java client.DSBlogClient $1
-
