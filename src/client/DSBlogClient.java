@@ -65,7 +65,7 @@ public class DSBlogClient {
 			return;
 		}
 
-		String IPAddressesFile = "../DSBlog2/IPAddresses";
+		String IPAddressesFile = "./IPAddresses";
 
 		BufferedReader br = null;
 		try {
