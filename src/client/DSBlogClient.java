@@ -22,7 +22,7 @@ public class DSBlogClient {
 	private static InetAddress desAddress;
 	private static List<InetAddress> desAddresses;
 	private static final int DC_LISTEN_TO_CLIENTS_PORT = 8887;
-	private static final int CLIENT_LISTEN_TO_DC_PORT = 8888;
+	private static final int CLIENT_LISTEN_TO_DC_PORT = 8889;
 	private static final boolean DEBUG = true;
 
 	private DSBlogClient() {
